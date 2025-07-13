@@ -3,14 +3,14 @@ resource "kubernetes_ingress_v1" "this" {
     name      = "${var.name}-ingress"
     namespace = var.namespace
     annotations = {
-      "kubernetes.io/ingress.class"    = "traefik"
-      "cert-manager.io/cluster-issuer" = "letsencrypt"
+      "kubernetes.io/ingress.class"                      = "traefik"
+      "cert-manager.io/cluster-issuer"                   = "letsencrypt"
       "traefik.ingress.kubernetes.io/router.entrypoints" = "websecure"
     }
   }
   spec {
     tls {
-      hosts = var.tls_domains
+      hosts       = [var.domain_name]
       secret_name = "${var.name}-tls"
     }
     rule {

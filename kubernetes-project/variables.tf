@@ -40,17 +40,17 @@ variable "environment_vars" {
 #################################################
 
 variable "storage_class_name" {
-  type = string
+  type    = string
   default = "nfs01"
 }
 
 variable "storage_size" {
-  type = string
+  type    = string
   default = "10G"
 }
 
 variable "storage_access_mode" {
-  type = string
+  type    = string
   default = "ReadWriteOnce"
 }
 
@@ -72,17 +72,4 @@ variable "domain_path" {
   description = "Domain path"
   type        = string
   default     = "/"
-}
-
-#################################################
-# Certificate
-#################################################
-variable "tls_cert_name" {
-  description = "TLS certification secret name"
-  type        = string
-}
-
-variable "tls_domains" {
-  description = "TLS default domains"
-  type        = list(string)
 }
