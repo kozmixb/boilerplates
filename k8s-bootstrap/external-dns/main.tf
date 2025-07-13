@@ -17,7 +17,7 @@ resource "helm_release" "this" {
   repository = "https://kubernetes-sigs.github.io/external-dns/"
   chart      = "external-dns"
   version    = "1.17.0"
-  namespace  = kubernetes_namespace_v1.support.metadata[0].name
+  namespace  = kubernetes_namespace_v1.this.metadata[0].name
 
   values = [yamlencode({
     domainFilters = [ var.domain_zone ]
