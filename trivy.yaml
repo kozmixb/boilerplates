@@ -1,0 +1,19 @@
+debug: false
+quiet: false
+cache-dir: $HOME/.cache/trivy
+insecure: false
+timeout: 10m
+
+format: table
+
+skip-dirs:
+  - "**/.terraform"
+
+severity:
+  - CRITICAL
+
+security-checks:
+  - config
+  - secret
+
+ignorefile: ".trivyignore.yaml"
