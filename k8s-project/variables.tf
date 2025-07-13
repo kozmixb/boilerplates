@@ -38,7 +38,6 @@ variable "environment_vars" {
 #################################################
 # Volumes
 #################################################
-
 variable "storage_class_name" {
   type    = string
   default = "nfs01"
