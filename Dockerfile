@@ -22,11 +22,11 @@ RUN apt update && apt install --no-install-recommends -y \
 
 WORKDIR /app
 
-RUN curl --silent --show-error --fail --remote-name https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_${TERRAFORM_ARCH}.zip && \
-    unzip -j terraform_${TERRAFORM_VERSION}_linux_${TERRAFORM_ARCH}.zip
+RUN curl --silent --show-error --fail --output "terraform.zip" --remote-name "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_${TERRAFORM_ARCH}.zip" && \
+    unzip -j terraform.zip
 
-ADD "https://github.com/terraform-linters/tflint/releases/latest/download/tflint_linux_${TERRAFORM_ARCH}.zip" /app
-RUN unzip "/app/tflint_linux_${TERRAFORM_ARCH}.zip" -d /usr/local/bin
+RUN curl -L --silent --show-error --fail --output "tflint.zip" --remote-name "https://github.com/terraform-linters/tflint/releases/latest/download/tflint_linux_${TERRAFORM_ARCH}.zip" && \
+    unzip tflint.zip
 
 #################################################
 # AWS CLI V2
@@ -46,8 +46,7 @@ RUN curl --show-error --fail --output "awscliv2.zip" --remote-name "https://awsc
     ./aws/install --install-dir /usr/local/aws-cli --bin-dir /usr/local/bin
 
 RUN curl -L --show-error --fail --output "eksctl.tar.gz" --remote-name "https://github.com/eksctl-io/eksctl/releases/download/v0.210.0/eksctl_Linux_amd64.tar.gz" && \
-    tar -xzf eksctl.tar.gz && \
-    mv /app/eksctl /usr/local/bin
+    tar -xzf eksctl.tar.gz
 
 #################################################
 # DigidalOcean CLI
@@ -83,6 +82,8 @@ WORKDIR /app
 
 COPY --from=terraform /app/terraform /usr/local/bin/terraform
 COPY --from=aws /usr/local/bin/ /usr/local/bin/
+COPY --from=terraform /app/tflint /usr/local/bin/tflint
+COPY --from=aws /app/eksctl /usr/local/bin/eksctl
 COPY --from=aws /usr/local/aws-cli /usr/local/aws-cli
 COPY --from=digitalocean /usr/local/bin/ /usr/local/bin/
 
