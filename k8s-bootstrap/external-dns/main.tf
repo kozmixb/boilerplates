@@ -20,22 +20,21 @@ resource "helm_release" "this" {
   namespace  = kubernetes_namespace_v1.this.metadata[0].name
 
   values = [yamlencode({
-    domainFilters = [ var.domain_zone ]
+    domainFilters = [var.domain_zone]
     provider = {
       name = var.provider
     }
 
-    env = [ for key, value in var.envs : {
-        name = "${key}"
-        valueFrom = {
-          secretKeyRef = {
-            name = kubernetes_secret_v1.this.metadata[0].name
-            key  = "${key}"
-          }
+    env = [for k, v in var.envs : {
+      name = k
+      valueFrom = {
+        secretKeyRef = {
+          name = kubernetes_secret_v1.this.metadata[0].name
+          key  = k
         }
       }
-    ]
-    
+    }]
+
     logLevel = "debug"
     rbac = {
       create = true

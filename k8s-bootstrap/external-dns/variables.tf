@@ -1,5 +1,5 @@
 variable "namespace" {
-  type = string
+  type    = string
   default = "default"
 }
 
@@ -9,7 +9,7 @@ variable "domain_zone" {
 
 variable "provider" {
   description = "domain provider"
-  type = string
+  type        = string
 }
 
 variable "domain_txt_owner_id" {
