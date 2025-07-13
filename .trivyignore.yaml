@@ -1,0 +1,5 @@
+misconfigurations:
+  - id: AVD-AWS-0104
+    paths:
+      - "test/kubernetes.tf"
+    statement: Services needs open egress rules
