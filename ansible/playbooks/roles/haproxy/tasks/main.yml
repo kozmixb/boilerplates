@@ -1,0 +1,22 @@
+---
+- name: Install haproxy
+  ansible.builtin.package:
+    name: haproxy
+    state: latest
+  become: true
+
+- name: Copy config
+  ansible.builtin.copy:
+    src: files/haproxy.cfg
+    dest: /etc/haproxy/haproxy.cfg
+    backup: true
+  become: true
+  register: haproxy_config
+
+- name: Reload config
+  ansible.builtin.systemd:
+    name: haproxy.service
+    enabled: true
+    state: reloaded
+  become: true
+  when: haproxy_config.changed
