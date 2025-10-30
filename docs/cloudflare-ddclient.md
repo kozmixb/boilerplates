@@ -4,13 +4,13 @@ How to add Cloudflare ddns to ddclient config
 
 ## Steps
 
-```
-apt update \
-  && apt install -y ddclient
+```shell
+apt update
+apt install -y ddclient
 ```
 
 Update ddclient
-```
+```shell
 # /etc/ddclient.conf
 protocol=cloudflare \
 use=web, web=https://api.ipify.org/ \
