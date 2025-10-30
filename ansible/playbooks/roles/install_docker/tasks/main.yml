@@ -1,0 +1,6 @@
+---
+- name: Folder management
+  ansible.builtin.include_tasks: "{{ item }}"
+  loop:
+    - apt.yml
+    - docker.yml

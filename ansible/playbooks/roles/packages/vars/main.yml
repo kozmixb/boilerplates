@@ -1,0 +1,14 @@
+---
+packages_apps:
+  - nano
+  - htop
+  - net-tools
+  - curl
+  - clang
+  - git
+  - gzip
+  - tar
+
+packages_apps_remove: []
+
+packages_repositories: []

@@ -1,0 +1,23 @@
+---
+- name: Install OpenVSwitch
+  ansible.builtin.package:
+    name:
+      - openvswitch-switch-dpdk
+      - linux-modules-extra-raspi
+      - bridge-utils
+    state: latest
+
+- name: Create macvlan interface
+  ansible.builtin.copy:
+    dest: /etc/networkd-dispatcher/routable.d/10-macvlan-interfaces.sh
+    src: "../files/10-macvlan-interfaces.sh"
+    mode: "0755"
+
+- name: Updating Network Configuration
+  ansible.builtin.copy:
+    dest: /etc/netplan/macvlan.yaml
+    src: "../files/macvlan.yaml"
+    mode: "0600"
+
+- name: Apply Network Changes
+  ansible.builtin.shell: netplan apply

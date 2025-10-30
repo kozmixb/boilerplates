@@ -1,0 +1,32 @@
+---
+- name: Creates directory
+  ansible.builtin.file:
+    path: /var/www/html/public
+    state: directory
+    mode: "0644"
+
+- name: Ensure nginx is at the latest version
+  ansible.builtin.package:
+    name: nginx
+    state: latest
+
+- name: Copy php8.2-fpm config
+  ansible.builtin.copy:
+    dest: /etc/nginx/nginx.conf
+    src: "files/nginx-php82.conf"
+    mode: "0644"
+  diff: true
+  when: php_version is defined and php_version == 8.2
+
+- name: Start nginx
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded
+
+- name: start php-fpm
+  ansible.builtin.service:
+    name: php8.2-fpm.service
+    state: reloaded
+    enabled: true
+  diff: true
+  when: php_version is defined and php_version == 8.2

@@ -1,0 +1,16 @@
+---
+- name: Install apt
+  ansible.builtin.apt:
+    update_cache: yes
+    upgrade: yes
+  become: true
+
+- name: Install required system packages
+  ansible.builtin.package:
+    name:
+      - ca-certificates
+      - curl
+      - software-properties-common
+    state: latest
+    update_cache: true
+  become: true

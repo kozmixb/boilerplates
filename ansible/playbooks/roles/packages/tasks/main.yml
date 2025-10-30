@@ -1,0 +1,24 @@
+---
+- name: Add APP repositories
+  ansible.builtin.apt_repository:
+    repo: "{{ item }}"
+    state: install
+  loop: "{{ packages_repositories }}"
+
+- name: Update packages
+  ansible.builtin.apt:
+    update_cache: yes
+    upgrade: yes
+    autoremove: true
+    clean: yes
+
+- name: Remove packages
+  ansible.builtin.package:
+    name: "{{ packages_apps_remove }}"
+    state: absent
+    autoremove: true
+
+- name: Update essential packages
+  ansible.builtin.package:
+    name: "{{ packages_apps }}"
+    state: latest

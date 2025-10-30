@@ -1,0 +1,21 @@
+---
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    macvlan:
+      addresses:
+        - 172.16.31.5/32
+      routes:
+        - to: 172.16.31.11/32
+          via: 172.16.31.5
+          metric: 100
+        - to: 172.16.31.52/32
+          via: 172.16.31.5
+          metric: 100
+        - to: 172.16.31.53/32
+          via: 172.16.31.5
+          metric: 100
+        - to: 172.16.31.57/32
+          via: 172.16.31.5
+          metric: 100

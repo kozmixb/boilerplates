@@ -1,0 +1,21 @@
+---
+- name: Check if node exporter exist
+  ansible.builtin.stat:
+    path: "{{ node_exporter_bin }}"
+  register: __check_node_exporter_present
+
+- name: Retrieve platform architecture
+  ansible.builtin.shell: |
+    dpkg --print-architecture
+  changed_when: false
+  register: __node_exporter_architecture
+
+- name: Print architecture
+  ansible.builtin.debug:
+    var: __node_exporter_architecture.stdout
+
+- name: If node exporter exist get version
+  ansible.builtin.shell: "cat /etc/systemd/system/node_exporter.service | grep Version | sed s/'.*Version '//g"
+  when: __check_node_exporter_present.stat.exists == true
+  changed_when: false
+  register: __get_node_exporter_version

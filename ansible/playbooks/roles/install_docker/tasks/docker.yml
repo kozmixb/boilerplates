@@ -1,0 +1,42 @@
+---
+- name: Add Docker GPG apt Key
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+  become: true
+
+- name: Add Docker Repository
+  ansible.builtin.apt_repository:
+    repo: deb https://download.docker.com/debian/ubuntu trixie stable
+    state: present
+  become: true
+
+- name: Update apt and install docker-ce
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: latest
+    update_cache: true
+  become: true
+
+- name: configure macvlan
+  community.docker.docker_network:
+    name: macvlan
+    driver: macvlan
+    driver_options:
+      parent: eth0
+    ipam_config:
+      - subnet: 172.16.31.0/24
+        gateway: 172.16.31.1
+  when: macvlan_enabled
+
+- name: adding existing user '{{ user }}' to group docker
+  ansible.builtin.user:
+    name: "{{ user }}"
+    groups: docker
+    append: yes
+  become: true

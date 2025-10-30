@@ -1,0 +1,7 @@
+---
+- name: Package management
+  ansible.builtin.include_tasks: "{{ item }}"
+  loop:
+    - register.yml
+    - user.yml
+    - node_exporter.yml
