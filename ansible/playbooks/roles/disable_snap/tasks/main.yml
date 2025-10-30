@@ -1,0 +1,27 @@
+---
+- name: Get list of all packages
+  package_facts:
+    manager: auto
+
+- name: Stop and disable Snap
+  ansible.builtin.service:
+    name: snapd.service
+    state: stopped
+    enabled: no
+  when: "'snapd' in ansible_facts.packages"
+
+- name: Remove Snap
+  ansible.builtin.package:
+    name: snapd
+    state: absent
+    purge: yes
+    autoremove: yes
+  when: "'snapd' in ansible_facts.packages"
+
+- name: Prevent Snap installs
+  ansible.builtin.copy:
+    src: files/nosnap.pref
+    dest: /etc/apt/preferences.d/
+    owner: root
+    group: root
+    mode: 0440

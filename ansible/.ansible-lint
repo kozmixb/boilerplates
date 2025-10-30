@@ -1,0 +1,9 @@
+skip_list:
+  - "yaml"
+  - "role-name"
+  - "403" #ignore packages.state.latest
+
+exclude_paths:
+  - .vscode/
+  - configs/
+  - rules/docker_deploy/files/

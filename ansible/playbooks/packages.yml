@@ -1,0 +1,8 @@
+---
+- name: Manage packages
+  hosts: all
+  become: true
+
+  roles:
+    - disable_snap
+    - packages
