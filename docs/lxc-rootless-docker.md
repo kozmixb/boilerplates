@@ -18,10 +18,10 @@ Create the unprivileged LXC, but dont start it yet and update the
 `/etc/pve/lxc/{LXC_ID}.conf`
 ```shell
 features: fuse=1,keyctl=1,nesting=1
-lxc.mount.entry: /dev/fuse dev/fuse none bind,create=file 0 0
 lxc.cgroup.devices.allow: c 10:229 rwm
-lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
 lxc.cgroup2.devices.allow: c 10:200 rwm
+lxc.mount.entry: /dev/fuse dev/fuse none bind,create=file 0 0
+lxc.mount.entry: /dev/net/tun dev/net/tun none bind,create=file
 lxc.idmap: u 0 100000 262144
 lxc.idmap: g 0 100000 262144
 ```
