@@ -1,0 +1,58 @@
+services:
+  traefik:
+    image: "traefik:v3.5"
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - /opt/project/data/traefik-certs/:/etc/traefik/certs/
+    command:
+      - "--global.checkNewVersion=false"
+      - "--global.sendAnonymousUsage=false"
+      - "--log.level=DEBUG"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--certificatesresolvers.default.acme.email=noreply@example.com"
+      - "--certificatesresolvers.default.acme.storage=/etc/traefik/certs/acme.json"
+      - "--certificatesresolvers.default.acme.httpchallenge.entrypoint=web"
+      - "--api.dashboard=false"
+      - "--api.insecure=false"
+      - "--api.debug=false"
+      - "--providers.docker.exposedByDefault=false"
+    networks:
+      - public
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    env_file:
+      - .env
+    environment:
+      MARIADB_PORT: ${MARIADB_PORT:-3306}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.project.rule=Host(`${APP_URL}`)"
+      - "traefik.http.routers.project.entrypoints=websecure"
+      - "traefik.http.routers.project.tls=true"
+      - "traefik.http.routers.project.tls.certresolver=default"
+      - "traefik.http.routers.project.middlewares=hsts-auth@docker"
+      - "traefik.http.middlewares.hsts-auth.headers.browserXssFilter=true"
+      - "traefik.http.middlewares.hsts-auth.headers.frameDeny=true"
+      - "traefik.http.middlewares.hsts-auth.headers.forceSTSHeader=true"
+      - "traefik.http.middlewares.hsts-auth.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.hsts-auth.headers.stsPreload=true"
+      - "traefik.http.middlewares.hsts-auth.headers.stsSeconds=31536000"
+      - "traefik.http.services.project.loadbalancer.server.port=9000"
+    restart: unless-stopped
+    volumes:
+      - /opt/project/data/custom:/var/www/htdocs
+    networks:
+      - public
+
+networks:
+  public:
