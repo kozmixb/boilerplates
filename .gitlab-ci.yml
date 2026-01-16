@@ -1,0 +1,15 @@
+stages:
+  - sync
+
+github_sync:
+  stage: sync
+  image: alpine:latest
+  before_script:
+    - apk add git
+  script:
+    - git clone --mirror https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPO} ./repo/
+    - cd repo
+    - git remote set-url --push origin "https://oauth2:${PROJECT_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    - git push --verbose --mirror
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
