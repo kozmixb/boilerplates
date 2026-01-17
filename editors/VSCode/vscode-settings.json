@@ -1,0 +1,76 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.probe": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "html",
+    "vue",
+    "markdown",
+    "json"
+  ],
+  "[html]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.tabSize": 2
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+    "editor.tabSize": 2
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.tabSize": 2
+  },
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.wordBasedSuggestions": "off"
+  },
+  "[terraform]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "hashicorp.terraform",
+    "editor.tabSize": 2, // optionally
+  },
+  "[terraform-vars]": {
+    "editor.tabSize": 2 // optionally
+  },
+  "diffEditor.ignoreTrimWhitespace": false,
+  "editor.formatOnSave": true,
+  "editor.scrollBeyondLastLine": false,
+  "editor.wordBasedSuggestions": "off",
+  "eslint.alwaysShowStatus": true,
+  "eslint.codeActionsOnSave.rules": null,
+  "eslint.format.enable": true,
+  "eslint.validate": [
+    "javascript"
+  ],
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "git.ignoreMissingGitWarning": true,
+  "html.format.extraLiners": "",
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "markdown-preview-enhanced.previewTheme": "atom-dark.css",
+  "php.completion.autoimport-docblock": "default",
+  "php.format.codeStyle": "PSR-12",
+  "problems.decorations.enabled": false,
+  "workbench.colorTheme": "Jetbrains Dark Theme",
+  "workbench.iconTheme": "vscode-jetbrains-icon-theme",
+  "workbench.startupEditor": "none",
+  "[php]": {},
+  "php.executables": {
+    "v8.1": "/usr/local/bin/php"
+  },
+  "gitlens.rebaseEditor.ordering": "asc",
+  "gitlens.currentLine.enabled": false,
+  "gitlens.codeLens.authors.enabled": false,
+  "gitlens.codeLens.recentChange.enabled": false,
+  "workbench.settings.applyToAllProfiles": []
+}

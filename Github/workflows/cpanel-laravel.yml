@@ -1,0 +1,36 @@
+name: cpanellaravel
+on:
+  workflow_dispatch:
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v2
+      - name: Upload ftp
+        uses: SamKirkland/FTP-Deploy-Action@4.3.2
+        with:
+          local-dir: public/
+          server-dir: ./
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            github/**
+            docker/**
+            **/node_modules/**
+            storage/seeds/**
+            tests/**
+      - name: running command ssh
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT_SSH }}
+          script: |
+            composer install
+            php artisan migrate
