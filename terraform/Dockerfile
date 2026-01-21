@@ -10,7 +10,7 @@ ARG DOCTL_VERSION=1.131.0
 #################################################
 # Terrafom CLI
 #################################################
-FROM debian:latest AS terraform
+FROM debian:trixie AS terraform
 ARG TERRAFORM_VERSION
 ARG TERRAFORM_ARCH
 
@@ -31,7 +31,7 @@ RUN curl -L --silent --show-error --fail --output "tflint.zip" --remote-name "ht
 #################################################
 # AWS CLI V2
 #################################################
-FROM debian:latest AS aws
+FROM debian:trixie AS aws
 ARG AWS_CLI_VERSION
 RUN apt update && apt install -y --no-install-recommends \
     ca-certificates \
@@ -51,7 +51,7 @@ RUN curl -L --show-error --fail --output "eksctl.tar.gz" --remote-name "https://
 #################################################
 # DigidalOcean CLI
 #################################################
-FROM debian:latest AS digitalocean
+FROM debian:trixie AS digitalocean
 ARG DOCTL_VERSION
 RUN apt update && apt install -y --no-install-recommends \
     ca-certificates \
@@ -68,7 +68,7 @@ RUN curl -L --show-error --fail --output "doctl.tar.gz" --remote-name "https://g
 #################################################
 # Build image
 #################################################
-FROM debian:latest AS build
+FROM debian:trixie AS build
 RUN apt update && apt install -y --no-install-recommends \
     ca-certificates\
     git \
@@ -86,5 +86,11 @@ COPY --from=terraform /app/tflint /usr/local/bin/tflint
 COPY --from=aws /app/eksctl /usr/local/bin/eksctl
 COPY --from=aws /usr/local/aws-cli /usr/local/aws-cli
 COPY --from=digitalocean /usr/local/bin/ /usr/local/bin/
+
+RUN adduser nonroot
+USER nonroot
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD aws --version || exit 1
 
 CMD ["bash"]
