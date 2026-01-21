@@ -2,7 +2,7 @@ name: Vulnerability scanner
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
 
 jobs:
