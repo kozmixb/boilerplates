@@ -1,0 +1,74 @@
+- job_name: kubecost
+  honor_labels: true
+  scrape_interval: 1m
+  scrape_timeout: 10s
+  metrics_path: /metrics
+  scheme: http
+  dns_sd_configs:
+    - names:
+        - kubecost-cost-analyzer.support
+      type: 'A'
+      port: 9003
+- job_name: karpenter
+  honor_timestamps: true
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  metrics_path: /metrics
+  scheme: http
+  follow_redirects: true
+  enable_http2: true
+  static_configs:
+    - targets:
+        - karpenter.karpenter.svc.cluster.local:8080
+- job_name: 'default-kubernetes-pods'
+  kubernetes_sd_configs:
+    - role: pod
+  relabel_configs:
+    - source_labels: [ __meta_kubernetes_pod_annotation_prometheus_io_scrape ]
+      action: keep
+      regex: 'true'
+    - source_labels: [ __meta_kubernetes_pod_annotation_prometheus_io_path ]
+      action: replace
+      target_label: __metrics_path__
+      regex: (.+)
+    - source_labels: [ __address__, __meta_kubernetes_pod_annotation_prometheus_io_port ]
+      action: replace
+      regex: ([^:]+)(?::\d+)?;(\d+)
+      replacement: $1:$2
+      target_label: __address__
+    - action: labelmap
+      regex: __meta_kubernetes_pod_label_(.+)
+    - source_labels: [__meta_kubernetes_namespace]
+      action: replace
+      target_label: kubernetes_namespace
+    - source_labels: [__meta_kubernetes_pod_name]
+      action: replace
+      target_label: kubernetes_pod_name
+    - source_labels: [App]
+      action: replace
+      target_label: app
+    - source_labels: [pod_template_hash]
+      action: replace
+      target_label: hip_new
+- job_name: 'blackbox'
+  metrics_path: /probe
+  params:
+    module: [http_2xx]  # Look for a HTTP 200 response.
+  kubernetes_sd_configs:
+    - role: service
+  relabel_configs:
+    - source_labels: [ __meta_kubernetes_service_annotation_blackbox_io_enabled ]
+      action: keep
+      regex: 'true'
+    - source_labels: [__address__]
+      target_label: __param_target
+      replacement: http://$1/healthz
+    - source_labels: [__param_target]
+      target_label: instance
+    - target_label: __address__
+      replacement: blackbox-exporter.support # The blackbox exporter's real hostname:port.
+    - source_labels: [ __meta_dns_name ]
+      target_label: __param_hostname
+- job_name: 'blackbox_exporter'  # collect blackbox exporter's operational metrics.
+  static_configs:
+    - targets: ['blackbox-exporter']
