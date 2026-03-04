@@ -1,0 +1,21 @@
+[book]
+title = "kozmixb"
+authors = ["Bence Kozma"]
+description = "Internal documentation for our cool project."
+language = "en"
+src = "."
+
+[output.html]
+git-repository-url = "https://github.com/kozmixb/boilerplates"
+default-theme = "ayu"
+preferred-dark-theme = "ayu"
+
+[output.html.search]
+enable = true
+limit-results = 20
+teaser-word-count = 30
+
+[build]
+create-missing = false
+extra-watch-dirs = []
+build-dir = "book"
