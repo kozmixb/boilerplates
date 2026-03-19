@@ -7,11 +7,63 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
-  "icon_theme": "Zed (Default)",
-  "telemetry": {
-    "diagnostics": false,
-    "metrics": false,
+  "agent": {
+    "default_model": {
+      "provider": "openai",
+      "model": "qwen2.5-coder-14b-instruct-q4_k_m.gguf",
+      "enable_thinking": false,
+    },
+    "tool_permissions": {
+      "tools": {
+        "save_file": {
+          "default": "allow",
+        },
+        "create_directory": {
+          "default": "allow",
+        },
+        "copy_path": {
+          "default": "allow",
+        },
+        "edit_file": {
+          "default": "allow",
+        },
+        "tools_permissions": {
+          "default": "allow",
+        },
+      },
+    },
+    "show_turn_stats": true,
+    "enable_feedback": false,
+    "single_file_review": false,
   },
+  "prettier": {
+    "allowed": true,
+  },
+  "format_on_save": "on",
+  "notification_panel": {
+    "button": false,
+  },
+  "outline_panel": {
+    "button": false,
+  },
+  "project_panel": {
+    "show_diagnostics": "off",
+    "starts_open": false,
+  },
+  "relative_line_numbers": "disabled",
+  "scroll_beyond_last_line": "off",
+  "collaboration_panel": {
+    "button": false,
+  },
+  "buffer_font_features": {
+    "calt": false,
+  },
+  "tab_bar": {
+    "show": true,
+    "show_nav_history_buttons": false,
+  },
+  "disable_ai": false,
+  "ensure_final_newline_on_save": true,
   "base_keymap": "VSCode",
   "ui_font_size": 16,
   "buffer_font_size": 15,
@@ -19,5 +71,24 @@
     "mode": "system",
     "light": "One Light",
     "dark": "One Dark",
+  },
+  "auto_install_extensions": {
+    "html": true,
+    "dockerfile": true,
+    "terraform": true,
+    "pylsp": true,
+    "basher": true,
+    "ansible": true,
+  },
+  "language_models": {
+    "openai": {
+      "api_url": "http://10.10.1.109:8080/v1",
+      "available_models": [
+        {
+          "name": "qwen2.5-coder-14b-instruct-q4_k_m.gguf",
+          "max_tokens": 32768,
+        },
+      ],
+    },
   },
 }
