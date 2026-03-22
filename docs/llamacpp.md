@@ -2,6 +2,16 @@
 
 Following setup was tested on proxmox running an lxc container with B50 card
 
+lxc config
+
+```
+features: fuse=1,nesting=1
+lxc.cgroup2.devices.allow: c 226:* rwm
+lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir
+lxc.mount.entry: /sys/class/drm sys/class/drm none bind,optional,create=dir
+lxc.mount.entry: tmpfs dev/shm tmpfs rw,nosuid,nodev,size=8192M,create=dir 0 0
+```
+
 ```bash
 apt update && apt install curl intel-gpu-tools
 ```
