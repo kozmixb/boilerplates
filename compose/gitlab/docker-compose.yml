@@ -1,0 +1,153 @@
+services:
+  traefik:
+    image: "traefik:v3.6.7"
+    container_name: traefik
+    restart: unless-stopped
+    networks:
+      - traefik
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    command:
+      - "--global.checkNewVersion=false"
+      - "--global.sendAnonymousUsage=false"
+      - "--log.level=DEBUG"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--api.debug=false"
+      - "--providers.docker.exposedByDefault=false"
+
+  gitlab:
+    image: gitlab/gitlab-ee:${GITLAB_IMAGE_VERSION}
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gitlab.rule=Host(`${GITLAB_URL}`)"
+      - "traefik.http.routers.gitlab.entrypoints=websecure,web"
+      - "traefik.http.routers.gitlab.tls.certresolver=default"
+      - "traefik.http.routers.gitlab.service=gitlab"
+      - "traefik.http.services.gitlab.loadbalancer.server.port=8000"
+      - "traefik.http.routers.registry.rule=Host(`${REGISTRY_URL}`)"
+      - "traefik.http.routers.registry.entrypoints=websecure,web"
+      - "traefik.http.routers.registry.tls.certresolver=default"
+      - "traefik.http.routers.registry.service=registry"
+      - "traefik.http.services.registry.loadbalancer.server.port=5000"
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url '${EXTERNAL_URL}'
+
+        nginx['enable'] = true
+        nginx['listen_port'] = 8000
+        nginx['listen_https'] = false
+        nginx['real_ip_trusted_addresses'] = ['172.18.0.0/12', '10.0.0.0/8']
+        nginx['real_ip_header'] = 'X-Forwarded-For'
+        nginx['real_ip_recursive'] = 'on'
+        nginx['proxy_set_headers'] = {
+          "X-Forwarded-Proto" => "https",
+          "X-Forwarded-Ssl" => "on"
+        }
+        gitlab_rails['monitoring_whitelist'] = ['172.18.0.0/12']
+        gitlab_rails['trusted_proxies'] = ['10.10.0.10/32']
+        gitlab_rails['env'] = {
+          "GITLAB_LOG_LEVEL" => "warn"
+        }
+
+        gitlab_rails['object_store']['enabled'] = true
+        gitlab_rails['object_store']['connection'] = {
+          'provider' => 'AWS',
+          'region' => '${S3_REGION}',
+          'aws_access_key_id' => '${S3_ACCESS_KEY}',
+          'aws_secret_access_key' => '${S3_SECRET_KEY}',
+          'endpoint' => '${S3_ENDPOINT}',
+          'path_style' => true,
+          'ssl_verify_peer' => false,
+        }
+        gitlab_rails['object_store']['objects']['artifacts']['bucket'] = '${S3_BUCKET}/artifacts'
+        gitlab_rails['object_store']['objects']['lfs']['bucket'] = '${S3_BUCKET}/lfs'
+        gitlab_rails['object_store']['objects']['uploads']['bucket'] = '${S3_BUCKET}/uploads'
+        gitlab_rails['object_store']['objects']['packages']['bucket'] = '${S3_BUCKET}/packages'
+        gitlab_rails['object_store']['objects']['external_diffs']['bucket'] = '${S3_BUCKET}/diffs'
+        gitlab_rails['object_store']['objects']['terraform_state']['bucket'] = '${S3_BUCKET}/terraform'
+        gitlab_rails['object_store']['objects']['dependency_proxy']['bucket'] = '${S3_BUCKET}/dependency_proxy'
+        gitlab_rails['object_store']['objects']['ci_secure_files']['bucket'] = '${S3_BUCKET}/ci_secure_files'
+
+        registry_external_url '${REGISTRY_URL}'
+        gitlab_rails['registry_enabled'] = true
+        gitlab_rails['registry_notification_secret'] = '${REGISTRY_TOKEN}'
+        gitlab_rails['registry_issuer'] = "omnibus-gitlab-issuer"
+
+        registry['enable'] = true
+        registry['registry_http_addr'] = "0.0.0.0:5000"
+        registry['token_issuer'] = "omnibus-gitlab-issuer"
+        registry['log_level'] = "warn"
+        registry['env'] = {
+          "REGISTRY_HTTP_RELATIVEURLS" => "true"
+        }
+        registry['notifications'] = [
+          {
+            'name' => 'gitlab_main',
+            'url' => 'http://127.0.0.1:8080/api/v4/container_registry_event/events',
+            'timeout' => '500ms',
+            'maxretries' => 5,
+            'backoff' => '1s',
+            'headers' => {
+              'Authorization' => ['${REGISTRY_TOKEN}']
+            }
+          }
+        ]
+        registry['storage'] = {
+          's3' => {
+            'accesskey' => '${S3_ACCESS_KEY}',
+            'secretkey' => '${S3_SECRET_KEY}',
+            'bucket' => '${S3_BUCKET}',
+            'region' => '${S3_REGION}',
+            'regionendpoint' => '${S3_ENDPOINT}',
+            'rootdirectory' => '/registry',
+            'v4auth' => true,
+            'skipverify' => true,
+            'pathstyle' => true,
+            'secure' => true
+          },
+          'redirect' => {
+            'disable' => true
+          }
+        }
+
+        # Performance
+        sidekiq['max_concurrency'] = 4
+        sidekiq['concurrency'] = 1
+        puma['worker_timeout'] = 120
+        puma['worker_processes'] = 0
+        gitlab_kas['enable'] = false
+        gitlab_rails['kubernetes_proxy_enabled'] = false
+
+        registry_nginx['enable'] = false
+        letsencrypt['enable'] = false
+        gitlab_rails['letsencrypt_auto_renew'] = false
+        prometheus['enable'] = false
+        prometheus_monitoring['enable'] = false
+        alertmanager['enable'] = false
+        redis_exporter['enable'] = false
+        postgres_exporter['enable'] = false
+        node_exporter['enable'] = false
+        gitlab_exporter['enable'] = false
+    shm_size: "256m"
+    ports:
+      - "22:22"
+    networks:
+      - traefik
+    volumes:
+      - ./tls.crt:/etc/gitlab/trusted-certs/minio.crt
+      - ./config:/etc/gitlab
+      - ./logs:/var/log/gitlab
+      - ./data:/var/opt/gitlab
+
+networks:
+  traefik:
