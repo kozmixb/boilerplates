@@ -1,0 +1,21 @@
+sonarqube-manual-analysis:
+  image: sonarsource/sonar-scanner-cli:latest
+  stage: sonar_analysis
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    paths:
+      - .sonar/cache
+  script:
+    - echo "Starting SonarQube analysis on $CI_COMMIT_REF_NAME branch (manual trigger)."
+    - >
+      sonar-scanner
+      -Dsonar.projectKey=$SONAR_PROJECT_KEY
+      -Dsonar.host.url=$SONAR_HOST_URL
+      -Dsonar.token=$SONAR_TOKEN
+      -Dsonar.sources=.
+      -Dsonar.qualitygate.wait="true"
+      -Dsonar.projectName=$SONAR_PROJECT_KEY
+  allow_failure: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE == "push"'
+      when: always
