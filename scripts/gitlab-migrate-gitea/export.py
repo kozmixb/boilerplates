@@ -22,9 +22,26 @@ def get_headers(token: str) -> dict[str, str]:
 def get_repositories():
     url = f"{GITLAB_URL}/api/v4/projects"
     headers = get_headers(GITLAB_API_TOKEN)
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()
-    return response.json()
+    all_repos = []
+    page = 1
+    per_page = 10
+
+    while True:
+        params = {
+            "page": page,
+            "per_page": per_page,
+        }
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()
+        repos = response.json()
+
+        if not repos:
+            break
+
+        all_repos.extend(repos)
+        page += 1
+
+    return all_repos
 
 
 def clone_repository(project):
