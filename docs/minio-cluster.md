@@ -19,7 +19,7 @@ services:
       - "traefik.http.services.api.loadbalancer.server.port=9000"
     environment:
       MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: "Cyberadmin"
+      MINIO_ROOT_PASSWORD: "minio"
       MINIO_SERVER_URL: https://minio-api.example.com
       MINIO_BROWSER_REDIRECT_URL: https://minio.example.com
       MINIO_VOLUMES: "http://minio1:9000/data http://minio2:9000/data http://minio3:9000/data"
