@@ -1,0 +1,17 @@
+docker_build:
+  stage: build
+  image: docker:24.0.5-cli
+  script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - '[ -n "$CI_COMMIT_TAG" ] && export FINAL_TAG=$CI_COMMIT_TAG || export FINAL_TAG=${CI_COMMIT_BRANCH}-${CI_COMMIT_SHORT_SHA}'
+    - docker build -t $CI_REGISTRY_IMAGE:$FINAL_TAG -f Dockerfile .
+    - docker push $CI_REGISTRY_IMAGE:$FINAL_TAG
+    - echo "DOCKER_BUILD_URL=$CI_REGISTRY_IMAGE:$FINAL_TAG" > build.env
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: always
+    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE == "push"'
+      when: always
+  artifacts:
+    reports:
+      dotenv: build.env

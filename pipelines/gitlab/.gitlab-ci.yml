@@ -1,0 +1,9 @@
+include:
+  - .gitlab/sonarqube.yml
+  - .gitlab/docker-build.yml
+  - .gitlab/deploy.yml
+
+stages:
+  - sonar_analysis
+  - build
+  - deploy

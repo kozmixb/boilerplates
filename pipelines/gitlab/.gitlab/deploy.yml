@@ -1,0 +1,24 @@
+deploy_dev:
+  stage: deploy
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: [""]
+  needs:
+    - docker_build
+  variables:
+    KUBECONFIG: $DEV_KUBECONFIG
+    K8S_NAMESPACE: default
+    K8S_DEPLOYMENT_NAME: api-deployment
+  script:
+    - echo "Set .kube/config"
+    - mkdir -p "${CI_PROJECT_DIR}/.kube"
+    - echo "$KUBECONFIG" | base64 -d > "${CI_PROJECT_DIR}/.kube/config"
+    - export KUBECONFIG="${CI_PROJECT_DIR}/.kube/config"
+    - echo "Deploying to Kubernetes cluster..."
+    - kubectl config get-contexts
+    - kubectl set image deployment/$K8S_DEPLOYMENT_NAME *="$DOCKER_BUILD_URL" -n $K8S_NAMESPACE
+    - echo "Deployment updated for $K8S_DEPLOYMENT_NAME in namespace $K8S_NAMESPACE with image $DOCKER_BUILD_URL"
+    - kubectl rollout status deployment/$K8S_DEPLOYMENT_NAME -n $K8S_NAMESPACE
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_PIPELINE_SOURCE == "push"'
+      when: on_success
