@@ -1,1 +1,29 @@
 book
+.DS_Store
+thumbs.db
+
+# OS generated
+*.swp
+*.swo
+*.swn
+*.tmp
+*.log
+*.lock
+*.bak
+*.old
+*.new
+
+# Editor files
+*.orig
+*.rej
+*~
+
+# IDE files
+.vscode/
+.idea/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.*.development
