@@ -7,14 +7,29 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "agent_servers": {
+    "qwen-code": {
+      "type": "registry",
+      "env": {
+        "OPENAI_BASE_URL": "http://10.10.1.109:8080/v1",
+        "OPENAI_MODEL": "Qwen3-Local-Coder",
+        "OPENAI_API_KEY": "local-llama",
+        "QWEN_AUTH_TYPE": "openai",
+      },
+    },
+  },
   "agent": {
+    "notify_when_agent_waiting": "never",
     "default_model": {
       "provider": "openai",
-      "model": "qwen2.5-coder-14b-instruct-q4_k_m.gguf",
+      "model": "Qwen3-Local-Coder",
       "enable_thinking": false,
     },
     "tool_permissions": {
       "tools": {
+        "find_path": {
+          "default": "allow",
+        },
         "save_file": {
           "default": "allow",
         },
@@ -34,7 +49,7 @@
     },
     "show_turn_stats": true,
     "enable_feedback": false,
-    "single_file_review": false,
+    "single_file_review": true,
   },
   "prettier": {
     "allowed": true,
@@ -79,16 +94,5 @@
     "pylsp": true,
     "basher": true,
     "ansible": true,
-  },
-  "language_models": {
-    "openai": {
-      "api_url": "http://10.10.1.109:8080/v1",
-      "available_models": [
-        {
-          "name": "qwen2.5-coder-14b-instruct-q4_k_m.gguf",
-          "max_tokens": 32768,
-        },
-      ],
-    },
   },
 }
