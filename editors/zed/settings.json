@@ -8,6 +8,9 @@
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
   "agent_servers": {
+    "codex-acp": {
+      "type": "registry",
+    },
     "qwen-code": {
       "type": "registry",
       "env": {
@@ -19,6 +22,8 @@
     },
   },
   "agent": {
+    "sidebar_side": "right",
+    "dock": "right",
     "notify_when_agent_waiting": "never",
     "default_model": {
       "provider": "openai",
@@ -55,15 +60,16 @@
     "allowed": true,
   },
   "format_on_save": "on",
-  "notification_panel": {
-    "button": false,
-  },
   "outline_panel": {
     "button": false,
   },
+  "git_panel": {
+    "dock": "left",
+  },
   "project_panel": {
+    "dock": "left",
     "show_diagnostics": "off",
-    "starts_open": false,
+    "starts_open": true,
   },
   "relative_line_numbers": "disabled",
   "scroll_beyond_last_line": "off",
