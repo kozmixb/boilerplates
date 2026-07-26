@@ -7,6 +7,9 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "preview_tabs": {
+    "enable_preview_from_project_panel": false,
+  },
   "agent_servers": {
     "codex-acp": {
       "type": "registry",
@@ -14,8 +17,8 @@
     "qwen-code": {
       "type": "registry",
       "env": {
-        "OPENAI_BASE_URL": "http://10.10.1.109:8080/v1",
-        "OPENAI_MODEL": "Qwen3-Local-Coder",
+        "OPENAI_BASE_URL": "http://10.10.1.100:11434/v1",
+        "OPENAI_MODEL": "google/gemma4",
         "OPENAI_API_KEY": "local-llama",
         "QWEN_AUTH_TYPE": "openai",
       },
@@ -25,11 +28,6 @@
     "sidebar_side": "right",
     "dock": "right",
     "notify_when_agent_waiting": "never",
-    "default_model": {
-      "provider": "openai",
-      "model": "Qwen3-Local-Coder",
-      "enable_thinking": false,
-    },
     "tool_permissions": {
       "tools": {
         "find_path": {
