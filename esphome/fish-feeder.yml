@@ -1,0 +1,306 @@
+# Fish feeder
+# Model WP8621
+# ESP32-WROOM-32D
+
+esphome:
+  name: fishfeeder
+  friendly_name: Fish Feeder
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+logger:
+
+api:
+  encryption:
+    key: !secret encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  networks:
+    - ssid: !secret wifi_ssid
+      password: !secret wifi_password
+      hidden: true
+  fast_connect: true
+  power_save_mode: none
+  manual_ip:
+    static_ip: 10.0.0.3
+    gateway: 10.0.0.1
+    subnet: 255.255.255.0
+
+preferences:
+  flash_write_interval: 1min
+
+# -------------------------------------------------------------------
+# Stored counters and operating state
+# -------------------------------------------------------------------
+globals:
+  - id: feed_count
+    type: int
+    restore_value: yes
+    initial_value: "0"
+
+  - id: failure_count
+    type: int
+    restore_value: yes
+    initial_value: "0"
+
+  - id: feeding
+    type: bool
+    restore_value: no
+    initial_value: "false"
+
+# -------------------------------------------------------------------
+# Automatic recovery check
+# -------------------------------------------------------------------
+interval:
+  - interval: 10min
+    then:
+      - if:
+          condition:
+            and:
+              - binary_sensor.is_off: open_close_sensor
+              - switch.is_off: motor_switch
+          then:
+            - logger.log:
+                level: WARN
+                format: "Tray is not home. Starting recovery."
+            - script.execute: start_recovery
+
+# -------------------------------------------------------------------
+# LED
+# -------------------------------------------------------------------
+output:
+  - platform: gpio
+    id: led_red_led
+    pin:
+      number: GPIO32
+
+light:
+  - platform: binary
+    name: "Red Light"
+    output: led_red_led
+    id: red_led
+
+# -------------------------------------------------------------------
+# Home Assistant buttons
+# -------------------------------------------------------------------
+button:
+  - platform: template
+    name: "Feed Now"
+    icon: "mdi:fish"
+    on_press:
+      - script.execute: start_feed
+
+  - platform: template
+    name: "Re-home Tray"
+    icon: "mdi:home-import-outline"
+    entity_category: diagnostic
+    on_press:
+      - script.execute: start_recovery
+
+  - platform: template
+    name: "Reset Feed Counter"
+    entity_category: config
+    on_press:
+      - lambda: |-
+          id(feed_count) = 0;
+          id(total_feeds_sensor).publish_state(0);
+
+  - platform: template
+    name: "Reset Failure Counter"
+    entity_category: config
+    on_press:
+      - lambda: |-
+          id(failure_count) = 0;
+          id(recovery_failures_sensor).publish_state(0);
+
+# -------------------------------------------------------------------
+# Sensors
+# -------------------------------------------------------------------
+sensor:
+  - platform: wifi_signal
+    name: "WiFi - Signal"
+    update_interval: 60s
+    entity_category: "diagnostic"
+
+  - platform: uptime
+    name: "System - Uptime"
+    entity_category: "diagnostic"
+
+  - platform: template
+    name: "Total Feeds"
+    id: total_feeds_sensor
+    icon: "mdi:fish"
+    accuracy_decimals: 0
+    unit_of_measurement: "feeds"
+    update_interval: 60s
+    lambda: |-
+      return id(feed_count);
+
+  - platform: template
+    name: "Recovery Failures"
+    id: recovery_failures_sensor
+    icon: "mdi:alert-circle"
+    accuracy_decimals: 0
+    unit_of_measurement: "times"
+    update_interval: 60s
+    lambda: |-
+      return id(failure_count);
+
+# -------------------------------------------------------------------
+# Physical inputs
+# -------------------------------------------------------------------
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO33
+      mode: INPUT_PULLUP
+      inverted: true
+    name: "Physical Button"
+    id: physical_button
+    filters:
+      - delayed_on_off: 20ms
+    on_press:
+      - script.execute: start_feed
+
+  - platform: gpio
+    pin:
+      number: GPIO14
+      mode:
+        input: true
+        pullup: false
+      inverted: true
+    name: "Food Level Sensor"
+    id: food_level_sensor
+    device_class: "problem"
+    filters:
+      - delayed_on_off: 100ms
+    on_press:
+      - logger.log:
+          level: WARN
+          format: "Food level is low!"
+    on_release:
+      - logger.log: "Food level is sufficient."
+
+  - platform: gpio
+    pin:
+      number: GPIO25
+      inverted: false
+      mode: INPUT_PULLUP
+    name: "Tray Home Position"
+    id: open_close_sensor
+    on_press:
+      - logger.log: "Home position reached"
+      - delay: 1500ms
+      - if:
+          condition:
+            binary_sensor.is_on: open_close_sensor
+          then:
+            - switch.turn_off: motor_switch
+            - if:
+                condition:
+                  lambda: |-
+                    return id(feeding);
+                then:
+                  - lambda: |-
+                      id(feed_count)++;
+                      id(total_feeds_sensor).publish_state(id(feed_count));
+                  - logger.log: "Feed completed successfully."
+                else:
+                  - logger.log: "Recovery completed successfully."
+            - lambda: |-
+                id(feeding) = false;
+
+# -------------------------------------------------------------------
+# Motor and system switches
+# -------------------------------------------------------------------
+switch:
+  - platform: gpio
+    pin:
+      number: GPIO27
+      inverted: false
+    id: motor_switch
+    name: "Motor Switch"
+    restore_mode: ALWAYS_OFF
+    on_turn_on:
+      - light.turn_on: red_led
+      - script.execute: motor_timeout
+    on_turn_off:
+      - script.stop: motor_timeout
+      - light.turn_off: red_led
+
+  - platform: restart
+    name: "System - Restart"
+
+  - platform: safe_mode
+    name: "System - Safe mode"
+
+# -------------------------------------------------------------------
+# Status LED
+# -------------------------------------------------------------------
+status_led:
+  pin:
+    number: GPIO26
+
+# -------------------------------------------------------------------
+# Motor control
+# -------------------------------------------------------------------
+script:
+  - id: start_feed
+    mode: single
+    then:
+      - if:
+          condition:
+            switch.is_off: motor_switch
+          then:
+            - logger.log: "Starting feed cycle."
+            - lambda: |-
+                id(feeding) = true;
+            - switch.turn_on: motor_switch
+          else:
+            - logger.log:
+                level: WARN
+                format: "Feed ignored because motor is already running."
+
+  - id: start_recovery
+    mode: single
+    then:
+      - if:
+          condition:
+            and:
+              - switch.is_off: motor_switch
+              - binary_sensor.is_off: open_close_sensor
+          then:
+            - logger.log: "Starting tray recovery."
+            - lambda: |-
+                id(feeding) = false;
+            - switch.turn_on: motor_switch
+          else:
+            - logger.log:
+                level: WARN
+                format: "Recovery not required or motor already running."
+
+  - id: motor_timeout
+    mode: restart
+    then:
+      - delay: 20s
+      - if:
+          condition:
+            switch.is_on: motor_switch
+          then:
+            - logger.log:
+                level: ERROR
+                format: "Motor timeout! Stopping motor."
+            - switch.turn_off: motor_switch
+            - lambda: |-
+                id(feeding) = false;
+                id(failure_count)++;
+                id(recovery_failures_sensor).publish_state(
+                  id(failure_count)
+                );
